@@ -1,0 +1,167 @@
+#-----------------------------------------------------------------------
+#　VFW.nako
+#　なでしこで Video for Windows を使う
+# https://msdn.microsoft.com/en-us/library/windows/desktop/dd757696(v=vs.85).aspx
+#-----------------------------------------------------------------------
+
+#---VFW定数-----
+!WM_CAP_DRIVER_CONNECTとは整数＝$400+10           # キャプチャウィンドウをキャプチャドライバに接続します。
+!WM_CAP_DRIVER_DISCONNECTとは整数＝$400+11        # キャプチャウィンドウからキャプチャドライバを切断します。
+!WM_CAP_FILE_SET_CAPTURE_FILEとは整数＝$400+20    # ビデオキャプチャに使用されるファイルの名前を指定します。
+!WM_CAP_EDIT_COPYとは＝$400+30                    # 画面をクリップボードにコピー。
+!WM_CAP_DLG_VIDEOFORMATとは整数＝$400+41          # ビデオ形式を選択できるダイアログボックスが表示されます。
+!WM_CAP_DLG_VIDEOSOURCEとは整数＝$400+42          # ビデオソースを制御できるダイアログボックスが表示されます。
+!WM_CAP_DLG_VIDEODISPLAYとは整数＝$400+43         # ビデオ出力を設定または調整できるダイアログボックスを表示します。
+!WM_CAP_DLG_VIDEOCOMPRESSIONとは整数＝$400+46     # キャプチャ処理中に使用する圧縮器を選択できるダイアログボックスを表示します。
+!WM_CAP_SET_PREVIEWとは整数＝$400+50              # プレビューモード（オン／オフ）
+!WM_CAP_SET_PREVIEWRATEとは整数＝$400+52          # プレビューモードのフレーム表示レート（ミリ秒）
+!WM_CAP_SET_SCALEとは整数＝$400+53                # 画像をキャプチャーウィンドウに合わせて拡縮（オン／オフ）
+!WM_CAP_GET_STATUSとは整数＝$400+54               # キャプチャウィンドウのステータスを取得します。
+!WM_CAP_SEQUENCEとは整数＝$400+62                 # ストリーミングビデオおよびオーディオキャプチャをファイルに開始します。
+#-----------------------------------------------------------
+●カメラ接続（ハンドルに{数値=0}Noの）
+　　メッセージ送信(ハンドル,WM_CAP_DRIVER_CONNECT,No,0)　　# カメラが１台ならNoは０でＯＫ
+
+●カメラ切断（ハンドルから）
+　　メッセージ送信(ハンドル,WM_CAP_DRIVER_DISCONNECT,0,0)
+
+●プレビューレート設定（ハンドルをmsに）
+　　メッセージ送信(ハンドル,WM_CAP_SET_PREVIEWRATE,ms,0)　　# ms＝ミリ秒単位
+
+●プレビューモード設定（ハンドルをfに）
+　　メッセージ送信(ハンドル,WM_CAP_SET_PREVIEW,f,0)　　　　 # f＝オン／オフ
+
+●キャプチャ開始（ハンドルを）
+　　メッセージ送信(ハンドル,WM_CAP_SEQUENCE,0,0)
+
+●キャプチャファイル設定（ハンドルをaviファイル名に）
+　　メッセージ送信(ハンドル,WM_CAP_FILE_SET_CAPTURE_FILE,0,aviファイル名)
+
+●スケーリングフラグ設定（ハンドルをfに）
+　　メッセージ送信(ハンドル,WM_CAP_SET_SCALE,f,0)　　　　　 # f＝オン／オフ
+
+●クリップボードコピー（ハンドルを）
+　　メッセージ送信(ハンドル,WM_CAP_EDIT_COPY,0,0)
+#-----------------------------------------------------------
+●ビデオ形式ダイアログ（ハンドルの）
+　　メッセージ送信(ハンドル,WM_CAP_DLG_VIDEOFORMAT,0,0)
+
+●ビデオソースダイアログ（ハンドルの）
+　　メッセージ送信(ハンドル,WM_CAP_DLG_VIDEOSOURCE,0,0)
+
+●ビデオ出力設定ダイアログ（ハンドルの）
+　　メッセージ送信(ハンドル,WM_CAP_DLG_VIDEODISPLAYT,0,0)　　# 出ない
+
+●圧縮器選択ダイアログ（ハンドルの）
+　　メッセージ送信(ハンドル,WM_CAP_DLG_VIDEOCOMPRESSION,0,0)
+#-----------------------------------------------------------
+●ステータス取得（ハンドルの）
+　　PACK(ＣＷ,S,"UINT,UINT,BOOL,BOOL,BOOL,long,BOOL,BOOL,BOOL,DWORD,DWORD,DWORD,DWORD,HPALETTE,BOOL,DWORD,UINT,UINT")
+　　メッセージ送信(ハンドル,WM_CAP_GET_STATUS,76,POINTER(S))　　　 # Size＝バイト単位。S＝CAPSTATUS構造体へのポインタ。
+　　UNPACK(S,ＣＷ,"UINT,UINT,BOOL,BOOL,BOOL,long,BOOL,BOOL,BOOL,DWORD,DWORD,DWORD,DWORD,HPALETTE,BOOL,DWORD,UINT,UINT")
+
+■ＣＷ
+　・幅
+　・高さ
+　・fLiveWindow
+　・fOverlayWindow
+　・fScale
+　・ptScroll
+　・fUsingDefaultPalette
+　・fAudioHardware
+　・fCapFileExists
+　・dwCurrentVideoFrame
+　・dwCurrentVideoFramesDropped
+　・dwCurrentWaveSamples
+　・dwCurrentTimeElapsedMS
+　・hPalCurrent
+　・fCapturingNow
+　・dwReturn
+　・wNumVideoAllocated
+　・wNumAudioAllocated
+#-----------------------------------------------------------
+#-----API---------------------------------------------------
+#https://msdn.microsoft.com/ja-jp/library/cc428606.aspx
+●capCreateCaptureWindowA(lpszWindowName,dwStyle,x,y,nWidth,nHeight,hWnd,nID) =DLL("avicap32.dll",
+"HWND capCreateCaptureWindowA(
+LPCSTR lpszWindowName,  // ウィンドウ名
+DWORD dwStyle,          // ウィンドウスタイル
+int x,                  // X
+int y,                  // Y
+int nWidth,             // W
+int nHeight,            // H
+HWND hWnd,              // 親ウィンドウのハンドル
+int nID                 // ウィンドウ識別子…ってなんすか；
+)")
+●キャプチャーウィンドウ作成（母艦ハンドルに）
+　capCreateCaptureWindowA（"",ＣＷスタイル,0,0,0,0,母艦ハンドル,0）
+#-----------------------------------------------------------
+#https://msdn.microsoft.com/ja-jp/library/cc411022.aspx
+●メッセージ送信(hWnd,Msg,wParam,lParam) =DLL("user32.dll",
+"LRESULT SendMessageA(
+HWND hWnd,      // 送信先ウィンドウのハンドル
+UINT Msg,       // メッセージ
+SHORT wParam,  // メッセージの最初のパラメータ
+LPCSTR lParam   // メッセージの 2 番目のパラメータ
+)")
+#-----------------------------------------------------------
+#https://msdn.microsoft.com/ja-jp/library/cc410763.aspx
+●ウィンドウ破棄(hWndを) =DLL("user32.dll",
+"BOOL DestroyWindow(
+HWND hWnd   // 破棄するウィンドウのハンドル
+)")
+#-----------------------------------------------------------
+
+#---ウィンドウスタイル定数-----
+!WS_VISIBLEとは整数＝$10000000    # 初期状態（枠なし）で表示。
+!WS_CHILDとは整数＝$40000000      # 子ウィンドウ。
+!WS_CAPTIONとは整数＝$C00000      # タイトルバーを持つ。
+!WS_SYSMENUとは整数＝$80000       # システムメニューボタン。
+!枠なしとは整数＝WS_VISIBLE
+!枠固定とは整数＝WS_VISIBLE||WS_CAPTION||WS_SYSMENU
+!枠固定非表示とは整数＝WS_DISABLED||WS_CAPTION||WS_SYSMENU
+!ＣＷスタイルとは整数＝WS_VISIBLE||WS_CHILD　　＃キャプチャーウィンドウのスタイル
+#-----------------------------------------------------------
+●枠固定中央表示（母艦ハンドルとＣＷハンドルを）
+　　母艦ハンドルを枠固定に窓ハンドルスタイル設定。
+　　母艦のクライアント幅はＣＷの幅。母艦のクライアント高さはＣＷの高さ。
+　　母艦ハンドルを(デスクトップW-母艦の幅)/2,(デスクトップH-母艦の高さ)/2,母艦の幅,母艦の高さに窓ハンドル位置サイズ設定。
+　　ＣＷハンドルを0,0,母艦のクライアント幅,母艦のクライアント高さに窓ハンドル位置サイズ設定。
+　　母艦の可視はオン。　　#オンにしなくてもウィンドウは表示されるけど、タスクバーには表示されなくなる！
+
+●枠無全画面表示（母艦ハンドルを）
+　　母艦ハンドルを0,0,デスクトップW,デスクトップHで枠なしに窓ハンドルスタイル設定。
+　　母艦の可視はオン。
+#-----------------------------------------------------------
+#-----API---------------------------------------------------
+#https://msdn.microsoft.com/ja-jp/library/cc411206.aspx
+●SetWindowPos(hWnd,hWndInsertAfter,X,Y,cx,cy,uFlags) =DLL("user32.dll",
+"BOOL SetWindowPos(
+HWND hWnd,             // ウィンドウのハンドル
+HWND hWndInsertAfter,  // 配置順序のハンドル…？
+int X,                 // 横方向の位置
+int Y,                 // 縦方向の位置
+int cx,                // 幅
+int cy,                // 高さ
+UINT uFlags            // ウィンドウ位置のオプション
+)")
+
+●窓ハンドル位置サイズ設定（ハンドルをX,Y,W,Hに）
+　　SetWindowPos（ハンドル,0,X,Y,W,H,0）
+#-----------------------------------------------------------
+#https://msdn.microsoft.com/ja-jp/library/cc411203.aspx
+●SetWindowLong(hWnd,nIndex,dwNewLong) =DLL("user32.dll",
+"LONG SetWindowLongA(
+  HWND hWnd,       // ウィンドウのハンドル
+  int nIndex,      // 設定する値のオフセット
+  LONG dwNewLong   // 新しい値
+)")
+
+!GWL_STYLEとは整数＝-16　　　　　# ウィンドウスタイル
+!SWP_FRAMECHANGEDとは整数＝$20　 # SetWindowLong関数を使用後に新しいフレームスタイルの設定を適用
+●窓ハンドルスタイル設定（ハンドルを{数値=0}X,{数値=0}Y,{数値=0}W,{数値=0}Hでスタイルに）
+　　SetWindowLong（ハンドル,GWL_STYLE,スタイル）
+　　SetWindowPos（ハンドル,0,X,Y,W,H,SWP_FRAMECHANGED）
+　　# SetWindowLongでウィンドウスタイルを変更した後は、SetWindowPosでSWP_FRAMECHANGEDを指定して反映させる必要がある。
+#-----------------------------------------------------------
+
