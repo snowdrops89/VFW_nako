@@ -1,4 +1,4 @@
-# nako1_VFW
+# VFW_nako
 　なでしこで Video for Windows を使うやつです。
  
 　パソコンのｗｅｂカメラとか表示したり出来ます。
